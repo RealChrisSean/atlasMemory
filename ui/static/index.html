@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>atlasMemory Demo - TiDB AI Memory</title>
+    <style>
+        :root {
+            /* Light mode (default) */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --accent: #0ea5e9;
+            --accent-hover: #0284c7;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success-bg: #dcfce7;
+            --success-text: #166534;
+            --error-bg: #fee2e2;
+            --error-text: #991b1b;
+            --badge-branch-bg: #e0f2fe;
+            --badge-branch-text: #0369a1;
+            --badge-source-bg: #ecfccb;
+            --badge-source-text: #3f6212;
+            --badge-tag-bg: #f3e8ff;
+            --badge-tag-text: #7c3aed;
+            --score-bar-bg: #e2e8f0;
+            --header-bg: #f8fafc;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --border-color: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #e2e8f0;
+            --text-muted: #64748b;
+            --accent: #38bdf8;
+            --accent-hover: #7dd3fc;
+            --danger: #ef4444;
+            --danger-hover: #f87171;
+            --success-bg: #166534;
+            --success-text: #bbf7d0;
+            --error-bg: #991b1b;
+            --error-text: #fecaca;
+            --badge-branch-bg: #1e3a5f;
+            --badge-branch-text: #38bdf8;
+            --badge-source-bg: #365314;
+            --badge-source-text: #84cc16;
+            --badge-tag-bg: #4c1d95;
+            --badge-tag-text: #a78bfa;
+            --score-bar-bg: #334155;
+            --header-bg: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header {
+            background: var(--header-bg);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        header h1 span {
+            color: var(--accent);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            padding: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--border-color);
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--text-secondary);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr 1fr;
+            gap: 1px;
+            background: var(--border-color);
+            height: calc(100vh - 60px);
+        }
+
+        .panel {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        /* Left Panel - Branches */
+        .branch-selector {
+            margin-bottom: 1.5rem;
+        }
+
+        .branch-selector label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .branch-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Memory List */
+        .memory-list {
+            margin-top: 1.5rem;
+        }
+
+        .memory-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: border-color 0.2s;
+        }
+
+        .memory-item:hover {
+            border-color: var(--accent);
+        }
+
+        .memory-text {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .memory-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 0.625rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .badge-branch {
+            background: var(--badge-branch-bg);
+            color: var(--badge-branch-text);
+        }
+
+        .badge-source {
+            background: var(--badge-source-bg);
+            color: var(--badge-source-text);
+        }
+
+        .badge-tag {
+            background: var(--badge-tag-bg);
+            color: var(--badge-tag-text);
+        }
+
+        .timestamp {
+            font-size: 0.625rem;
+            color: var(--text-muted);
+        }
+
+        /* Middle Panel - Add Memory */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Right Panel - Search */
+        .search-modes {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .mode-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .mode-btn:hover:not(.active) {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .top-k-slider {
+            margin: 1rem 0;
+        }
+
+        .top-k-slider input[type="range"] {
+            width: 100%;
+            padding: 0;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Search Results */
+        .search-result {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .score {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .score-bar {
+            height: 4px;
+            background: var(--score-bar-bg);
+            border-radius: 2px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #818cf8);
+            border-radius: 2px;
+        }
+
+        /* SQL Panel */
+        .sql-panel {
+            margin-top: 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .sql-header {
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .sql-header:hover {
+            color: var(--text-secondary);
+        }
+
+        .sql-content {
+            padding: 1rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+            white-space: pre-wrap;
+            display: none;
+            background: var(--bg-primary);
+        }
+
+        .sql-content.visible {
+            display: block;
+        }
+
+        /* Status message */
+        .status {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+        }
+
+        .status.visible {
+            opacity: 1;
+        }
+
+        .status.success {
+            background: var(--success-bg);
+            color: var(--success-text);
+        }
+
+        .status.error {
+            background: var(--error-bg);
+            color: var(--error-text);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-primary);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            width: 400px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal h3 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>atlas<span>Memory</span></h1>
+            <div class="subtitle">TiDB-powered AI memory with hybrid search + branching</div>
+        </div>
+        <div class="header-right">
+            <div class="subtitle">One table. Vector + Full-text. Time travel.</div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+                <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display: none;">
+                    <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
+                </svg>
+                <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Left Panel: Branch + Memory List -->
+        <div class="panel">
+            <div class="panel-title">Branch & Memories</div>
+
+            <div class="branch-selector">
+                <label>Current Branch</label>
+                <select id="branchSelect" onchange="switchBranch()">
+                    <option value="main">main</option>
+                </select>
+            </div>
+
+            <div class="branch-actions">
+                <button class="btn-primary" onclick="showSavePointModal()">Save Point</button>
+                <button class="btn-danger" onclick="deleteBranch()" id="deleteBranchBtn">Delete</button>
+            </div>
+
+            <div class="memory-list" id="memoryList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">-</div>
+                    <div>No memories yet</div>
+                </div>
+            </div>
+
+            <div class="sql-panel">
+                <div class="sql-header" onclick="toggleSql('listSql')">
+                    Show SQL <span id="listSqlArrow">+</span>
+                </div>
+                <div class="sql-content" id="listSql"></div>
+            </div>
+        </div>
+
+        <!-- Middle Panel: Add Memory -->
+        <div class="panel">
+            <div class="panel-title">Add Memory</div>
+
+            <div class="form-group">
+                <label>Memory Text</label>
+                <textarea id="memoryText" placeholder="Enter memory content..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Source</label>
+                    <select id="memorySource">
+                        <option value="chat">Chat</option>
+                        <option value="doc">Document</option>
+                        <option value="tool">Tool</option>
+                        <option value="user">User Input</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tags (comma separated)</label>
+                    <input type="text" id="memoryTags" placeholder="preference, travel">
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="addMemory()" style="width: 100%;">
+                Add to Current Branch
+            </button>
+
+            <div class="sql-panel">
+                <div class="sql-header" onclick="toggleSql('addSql')">
+                    Show SQL <span id="addSqlArrow">+</span>
+                </div>
+                <div class="sql-content" id="addSql"></div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Search -->
+        <div class="panel">
+            <div class="panel-title">Search Memories</div>
+
+            <div class="form-group">
+                <label>Search Query</label>
+                <input type="text" id="searchQuery" placeholder="What are you looking for?" onkeypress="if(event.key==='Enter')searchMemories()">
+            </div>
+
+            <div class="search-modes">
+                <button class="mode-btn active" data-mode="hybrid" onclick="setSearchMode('hybrid')">Hybrid</button>
+                <button class="mode-btn" data-mode="vector" onclick="setSearchMode('vector')">Vector</button>
+                <button class="mode-btn" data-mode="fulltext" onclick="setSearchMode('fulltext')">Full-text</button>
+            </div>
+
+            <div class="top-k-slider">
+                <label>Results</label>
+                <input type="range" id="topK" min="1" max="10" value="5" oninput="updateTopKLabel()">
+                <div class="slider-label">
+                    <span>1</span>
+                    <span id="topKValue">5 results</span>
+                    <span>10</span>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="searchMemories()" style="width: 100%;">
+                Search
+            </button>
+
+            <div id="searchResults" style="margin-top: 1.5rem;">
+                <div class="empty-state">
+                    <div class="empty-state-icon">?</div>
+                    <div>Enter a query and search</div>
+                </div>
+            </div>
+
+            <div class="sql-panel">
+                <div class="sql-header" onclick="toggleSql('searchSql')">
+                    Show SQL <span id="searchSqlArrow">+</span>
+                </div>
+                <div class="sql-content" id="searchSql"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Point Modal -->
+    <div class="modal-overlay" id="savePointModal">
+        <div class="modal">
+            <h3>Create Save Point</h3>
+            <div class="form-group">
+                <label>Branch Name</label>
+                <input type="text" id="savePointName" placeholder="experiment-1">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="hideSavePointModal()">Cancel</button>
+                <button class="btn-primary" onclick="createSavePoint()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Toast -->
+    <div class="status" id="status"></div>
+
+    <script>
+        // State
+        let currentBranch = 'main';
+        let searchMode = 'hybrid';
+        const userId = 'demo-user';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBranches();
+            loadMemories();
+            loadTheme();
+        });
+
+        // ============================================================
+        // Theme Toggle
+        // ============================================================
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('sunIcon').style.display = 'block';
+                document.getElementById('moonIcon').style.display = 'none';
+            }
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+
+            if (isDark) {
+                html.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('sunIcon').style.display = 'none';
+                document.getElementById('moonIcon').style.display = 'block';
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('sunIcon').style.display = 'block';
+                document.getElementById('moonIcon').style.display = 'none';
+            }
+        }
+
+        // ============================================================
+        // Branch Management
+        // ============================================================
+
+        async function loadBranches() {
+            try {
+                const res = await fetch(`/api/branches?user_id=${userId}`);
+                const data = await res.json();
+
+                const select = document.getElementById('branchSelect');
+                select.innerHTML = data.branches.map(b =>
+                    `<option value="${b}" ${b === currentBranch ? 'selected' : ''}>${b}</option>`
+                ).join('');
+
+                updateDeleteButton();
+            } catch (err) {
+                showStatus('Failed to load branches', 'error');
+            }
+        }
+
+        function switchBranch() {
+            currentBranch = document.getElementById('branchSelect').value;
+            loadMemories();
+            updateDeleteButton();
+            showStatus(`Switched to branch: ${currentBranch}`, 'success');
+        }
+
+        function updateDeleteButton() {
+            const btn = document.getElementById('deleteBranchBtn');
+            btn.disabled = currentBranch === 'main';
+            btn.style.opacity = currentBranch === 'main' ? '0.5' : '1';
+        }
+
+        function showSavePointModal() {
+            document.getElementById('savePointModal').classList.add('visible');
+            document.getElementById('savePointName').focus();
+        }
+
+        function hideSavePointModal() {
+            document.getElementById('savePointModal').classList.remove('visible');
+            document.getElementById('savePointName').value = '';
+        }
+
+        async function createSavePoint() {
+            const tag = document.getElementById('savePointName').value.trim();
+            if (!tag) {
+                showStatus('Please enter a branch name', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/branches/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        tag: tag,
+                        source_branch: currentBranch
+                    })
+                });
+
+                const data = await res.json();
+                hideSavePointModal();
+
+                // Switch to new branch
+                currentBranch = data.new_branch;
+                await loadBranches();
+                document.getElementById('branchSelect').value = currentBranch;
+                await loadMemories();
+
+                showStatus(`Created branch: ${data.new_branch}`, 'success');
+                document.getElementById('listSql').textContent = data.sql_used;
+            } catch (err) {
+                showStatus('Failed to create save point', 'error');
+            }
+        }
+
+        async function deleteBranch() {
+            if (currentBranch === 'main') {
+                showStatus('Cannot delete main branch', 'error');
+                return;
+            }
+
+            if (!confirm(`Delete branch "${currentBranch}" and all its memories?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/branches/${currentBranch}?user_id=${userId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await res.json();
+
+                currentBranch = 'main';
+                await loadBranches();
+                document.getElementById('branchSelect').value = 'main';
+                await loadMemories();
+
+                showStatus(`Deleted ${data.deleted_count} memories`, 'success');
+            } catch (err) {
+                showStatus('Failed to delete branch', 'error');
+            }
+        }
+
+        // ============================================================
+        // Memory List
+        // ============================================================
+
+        async function loadMemories() {
+            try {
+                const res = await fetch(`/api/memories?user_id=${userId}&branch=${currentBranch}`);
+                const data = await res.json();
+
+                const list = document.getElementById('memoryList');
+
+                if (data.memories.length === 0) {
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">-</div>
+                            <div>No memories in "${currentBranch}"</div>
+                        </div>
+                    `;
+                } else {
+                    list.innerHTML = data.memories.map(m => `
+                        <div class="memory-item">
+                            <div class="memory-text">${escapeHtml(m.text)}</div>
+                            <div class="memory-meta">
+                                <span class="badge badge-branch">${m.branch}</span>
+                                ${m.metadata?.source ? `<span class="badge badge-source">${m.metadata.source}</span>` : ''}
+                                ${(m.metadata?.tags || []).map(t => `<span class="badge badge-tag">${t}</span>`).join('')}
+                                ${m.created_at ? `<span class="timestamp">${formatTime(m.created_at)}</span>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                document.getElementById('listSql').textContent = data.sql_used;
+            } catch (err) {
+                showStatus('Failed to load memories', 'error');
+            }
+        }
+
+        // ============================================================
+        // Add Memory
+        // ============================================================
+
+        async function addMemory() {
+            const text = document.getElementById('memoryText').value.trim();
+            if (!text) {
+                showStatus('Please enter memory text', 'error');
+                return;
+            }
+
+            const source = document.getElementById('memorySource').value;
+            const tags = document.getElementById('memoryTags').value;
+
+            try {
+                const res = await fetch('/api/memories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        text: text,
+                        source: source,
+                        tags: tags,
+                        branch: currentBranch
+                    })
+                });
+
+                const data = await res.json();
+
+                // Clear form
+                document.getElementById('memoryText').value = '';
+                document.getElementById('memoryTags').value = '';
+
+                // Reload memories
+                await loadMemories();
+
+                showStatus(`Memory added (id: ${data.id})`, 'success');
+                document.getElementById('addSql').textContent = data.sql_used;
+            } catch (err) {
+                showStatus('Failed to add memory', 'error');
+            }
+        }
+
+        // ============================================================
+        // Search
+        // ============================================================
+
+        function setSearchMode(mode) {
+            searchMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+        }
+
+        function updateTopKLabel() {
+            const value = document.getElementById('topK').value;
+            document.getElementById('topKValue').textContent = `${value} results`;
+        }
+
+        async function searchMemories() {
+            const query = document.getElementById('searchQuery').value.trim();
+            if (!query) {
+                showStatus('Please enter a search query', 'error');
+                return;
+            }
+
+            const topK = parseInt(document.getElementById('topK').value);
+
+            try {
+                const res = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        query: query,
+                        mode: searchMode,
+                        top_k: topK,
+                        branch: currentBranch
+                    })
+                });
+
+                const data = await res.json();
+                const results = document.getElementById('searchResults');
+
+                if (data.results.length === 0) {
+                    results.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">-</div>
+                            <div>No results found</div>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = data.results.map(r => `
+                        <div class="search-result">
+                            <div class="result-header">
+                                <span class="score">${(r.score * 100).toFixed(1)}% match</span>
+                                <span class="badge badge-branch">${currentBranch}</span>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" style="width: ${r.score * 100}%"></div>
+                            </div>
+                            <div class="memory-text">${escapeHtml(r.text)}</div>
+                            <div class="memory-meta">
+                                ${r.metadata?.source ? `<span class="badge badge-source">${r.metadata.source}</span>` : ''}
+                                ${(r.metadata?.tags || []).map(t => `<span class="badge badge-tag">${t}</span>`).join('')}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                document.getElementById('searchSql').textContent = data.sql_used;
+                showStatus(`Found ${data.results.length} results (${data.mode} mode)`, 'success');
+            } catch (err) {
+                showStatus('Search failed', 'error');
+            }
+        }
+
+        // ============================================================
+        // Utilities
+        // ============================================================
+
+        function toggleSql(id) {
+            const el = document.getElementById(id);
+            const arrow = document.getElementById(id + 'Arrow');
+            el.classList.toggle('visible');
+            arrow.textContent = el.classList.contains('visible') ? '-' : '+';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status visible ${type}`;
+            setTimeout(() => {
+                status.classList.remove('visible');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

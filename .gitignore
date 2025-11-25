@@ -1,0 +1,26 @@
+# env
+.env
+
+# claude
+CLAUDE.md
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# venv
+venv/
+.venv/
+
+# ide
+.idea/
+.vscode/
+*.swp
+
+# os
+.DS_Store
+Thumbs.db

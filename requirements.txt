@@ -1,0 +1,16 @@
+# atlasMemory dependencies
+
+# Database
+sqlalchemy>=2.0.0
+pymysql>=1.1.0
+tidb-vector>=0.0.9
+
+# Embeddings (local, no API key needed)
+sentence-transformers>=2.2.0
+
+# Web UI
+fastapi>=0.100.0
+uvicorn>=0.20.0
+
+# Environment
+python-dotenv>=1.0.0
