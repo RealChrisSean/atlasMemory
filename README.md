@@ -2,7 +2,9 @@
 
 ![atlasMemory UI](atlas_memory/screenshots/ui.png)
 
-AI memory backed by TiDB. Vector search, full-text, hybrid retrieval, and branching - all in one table.
+A Git-style memory layer for AI agents, built on TiDB. One table, three search modes (vector, full-text, hybrid), multi-tenant support, and branching for experiments and rollbacks. All in vanilla SQL. No Pinecone + Postgres + Redis stack to manage.
+
+Other memory systems exist, but most don't give you branching, full-text, vectors together in a single distributed SQL database. If you want to experiment safely without juggling multiple services, this is a clean option.
 
 ## Quickstart
 
