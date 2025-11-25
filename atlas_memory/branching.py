@@ -1,5 +1,3 @@
-# atlas_memory/branching.py
-
 from datetime import datetime
 from typing import List
 from sqlalchemy import text
@@ -9,7 +7,6 @@ from atlas_memory.schema import Memory
 
 
 def save_point(user_id: str, tag: str, source_branch: str = "main") -> str:
-    """Copy all memories from source_branch to a new branch."""
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     new_branch = f"{tag}-{timestamp}"
 
@@ -35,7 +32,6 @@ def save_point(user_id: str, tag: str, source_branch: str = "main") -> str:
 
 
 def load_point(branch: str) -> str:
-    """Returns the branch name. Exists for API clarity."""
     return branch
 
 

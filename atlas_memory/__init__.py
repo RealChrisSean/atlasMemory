@@ -1,5 +1,3 @@
-# atlas_memory/__init__.py
-
 from atlas_memory.memory import add_memory, search_memory
 from atlas_memory.branching import save_point, load_point, delete_branch, list_branches
 from atlas_memory.embeddings import embed
@@ -8,8 +6,6 @@ from atlas_memory.schema import Memory, init_db
 
 
 class MemoryClient:
-    """Wraps core functions with user_id and branch state."""
-
     def __init__(self, user_id: str, branch: str = "main"):
         self.user_id = user_id
         self.branch = branch

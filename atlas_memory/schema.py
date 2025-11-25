@@ -1,5 +1,3 @@
-# atlas_memory/schema.py
-
 from sqlalchemy import Column, Integer, String, Text, JSON, DateTime, Index
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func

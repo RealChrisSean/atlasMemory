@@ -1,5 +1,3 @@
-# atlas_memory/db.py
-
 import os
 from contextlib import contextmanager
 from urllib.parse import quote_plus

@@ -1,5 +1,3 @@
-# atlas_memory/memory.py
-
 from typing import Optional, List, Dict
 from sqlalchemy import text
 

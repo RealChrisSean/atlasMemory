@@ -1,8 +1,3 @@
-# app.py
-"""
-FastAPI backend for atlasMemory demo UI.
-Showcases TiDB as the single AI memory backend.
-"""
 import sys
 from pathlib import Path
 from typing import Optional, List
@@ -29,17 +24,12 @@ from atlas_memory import (
 )
 from atlas_memory.schema import Memory
 
-app = FastAPI(title="atlasMemory Demo", description="TiDB-powered AI memory with hybrid search + branching")
+app = FastAPI(title="atlasMemory Demo")
 
-# Initialize database on startup
 @app.on_event("startup")
 def startup():
     init_db(engine)
 
-
-# ============================================================
-# Pydantic models for request/response
-# ============================================================
 
 class AddMemoryRequest(BaseModel):
     user_id: str = "demo-user"
@@ -84,13 +74,8 @@ class SearchResultResponse(BaseModel):
     sql_used: Optional[str] = None
 
 
-# ============================================================
-# API Endpoints
-# ============================================================
-
 @app.post("/api/memories")
 def api_add_memory(req: AddMemoryRequest):
-    """Add a memory to the current branch."""
     metadata = {
         "source": req.source,
         "tags": [t.strip() for t in req.tags.split(",") if t.strip()]
@@ -117,7 +102,6 @@ VALUES ('{req.user_id}', '{req.text[:50]}...', '{metadata}', <384-dim vector>, '
 
 @app.get("/api/memories")
 def api_list_memories(user_id: str = "demo-user", branch: str = "main"):
-    """List all memories in a branch."""
     with get_session() as db:
         memories = db.query(Memory).filter(
             Memory.user_id == user_id,
@@ -141,7 +125,6 @@ def api_list_memories(user_id: str = "demo-user", branch: str = "main"):
 
 @app.post("/api/search")
 def api_search(req: SearchRequest):
-    """Search memories with vector, fulltext, or hybrid mode."""
     results = search_memory(
         user_id=req.user_id,
         query=req.query,
@@ -183,7 +166,6 @@ ORDER BY distance LIMIT {req.top_k * 2}
 
 @app.get("/api/branches")
 def api_list_branches(user_id: str = "demo-user"):
-    """List all branches for a user."""
     branches = list_branches(user_id)
     # Always include 'main' even if empty
     if "main" not in branches:
@@ -197,7 +179,6 @@ def api_list_branches(user_id: str = "demo-user"):
 
 @app.post("/api/branches/save")
 def api_save_point(req: SavePointRequest):
-    """Create a new branch (savepoint) from source branch."""
     new_branch = save_point(
         user_id=req.user_id,
         tag=req.tag,
@@ -218,7 +199,6 @@ WHERE user_id='{req.user_id}' AND branch='{req.source_branch}'"""
 
 @app.delete("/api/branches/{branch}")
 def api_delete_branch(branch: str, user_id: str = "demo-user"):
-    """Delete a branch (all memories in that branch)."""
     if branch == "main":
         raise HTTPException(status_code=400, detail="Cannot delete main branch")
 
@@ -232,10 +212,6 @@ def api_delete_branch(branch: str, user_id: str = "demo-user"):
     }
 
 
-# ============================================================
-# Seed Data for Demo
-# ============================================================
-
 SEED_MEMORIES = [
     {"text": "User loves beach destinations with warm weather", "source": "user", "tags": "preference, travel"},
     {"text": "User prefers boutique hotels over large chains", "source": "user", "tags": "preference, hotel"},
@@ -244,7 +220,6 @@ SEED_MEMORIES = [
 
 @app.post("/api/seed")
 def api_seed_data(user_id: str = "demo-user"):
-    """Seed demo data into main branch if empty."""
     with get_session() as db:
         count = db.query(Memory).filter(
             Memory.user_id == user_id,
@@ -267,7 +242,6 @@ def api_seed_data(user_id: str = "demo-user"):
 
 @app.post("/api/reset")
 def api_reset_demo(user_id: str = "demo-user"):
-    """Reset demo: delete all branches and memories, then re-seed."""
     with get_session() as db:
         # delete everything for this user
         db.query(Memory).filter(Memory.user_id == user_id).delete()
@@ -284,13 +258,8 @@ def api_reset_demo(user_id: str = "demo-user"):
     return {"reset": True, "seeded": len(SEED_MEMORIES)}
 
 
-# ============================================================
-# Serve the HTML frontend
-# ============================================================
-
 @app.get("/", response_class=HTMLResponse)
 def serve_frontend():
-    """Serve the single-page HTML frontend."""
     html_path = Path(__file__).parent / "static" / "index.html"
     if html_path.exists():
         return html_path.read_text()
