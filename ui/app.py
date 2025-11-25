@@ -233,6 +233,58 @@ def api_delete_branch(branch: str, user_id: str = "demo-user"):
 
 
 # ============================================================
+# Seed Data for Demo
+# ============================================================
+
+SEED_MEMORIES = [
+    {"text": "User loves beach destinations with warm weather", "source": "user", "tags": "preference, travel"},
+    {"text": "User prefers boutique hotels over large chains", "source": "user", "tags": "preference, hotel"},
+    {"text": "Budget is around $3000 for a week-long trip", "source": "chat", "tags": "budget, travel"},
+]
+
+@app.post("/api/seed")
+def api_seed_data(user_id: str = "demo-user"):
+    """Seed demo data into main branch if empty."""
+    with get_session() as db:
+        count = db.query(Memory).filter(
+            Memory.user_id == user_id,
+            Memory.branch == "main"
+        ).count()
+
+        if count > 0:
+            return {"seeded": False, "message": "Main branch already has data"}
+
+    # main is empty, add seed data
+    for mem in SEED_MEMORIES:
+        metadata = {
+            "source": mem["source"],
+            "tags": [t.strip() for t in mem["tags"].split(",") if t.strip()]
+        }
+        add_memory(user_id, mem["text"], metadata, "main")
+
+    return {"seeded": True, "count": len(SEED_MEMORIES)}
+
+
+@app.post("/api/reset")
+def api_reset_demo(user_id: str = "demo-user"):
+    """Reset demo: delete all branches and memories, then re-seed."""
+    with get_session() as db:
+        # delete everything for this user
+        db.query(Memory).filter(Memory.user_id == user_id).delete()
+        db.commit()
+
+    # re-seed
+    for mem in SEED_MEMORIES:
+        metadata = {
+            "source": mem["source"],
+            "tags": [t.strip() for t in mem["tags"].split(",") if t.strip()]
+        }
+        add_memory(user_id, mem["text"], metadata, "main")
+
+    return {"reset": True, "seeded": len(SEED_MEMORIES)}
+
+
+# ============================================================
 # Serve the HTML frontend
 # ============================================================
 

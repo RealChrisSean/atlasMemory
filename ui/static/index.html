@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>atlasMemory Demo - TiDB AI Memory</title>
+    <title>atlasMemory Demo</title>
     <style>
         :root {
-            /* Light mode (default) */
             --bg-primary: #ffffff;
             --bg-secondary: #f8fafc;
             --bg-tertiary: #f1f5f9;
@@ -17,19 +16,15 @@
             --accent: #0ea5e9;
             --accent-hover: #0284c7;
             --danger: #ef4444;
-            --danger-hover: #dc2626;
-            --success-bg: #dcfce7;
-            --success-text: #166534;
-            --error-bg: #fee2e2;
-            --error-text: #991b1b;
+            --success: #22c55e;
+            --warning: #f59e0b;
             --badge-branch-bg: #e0f2fe;
             --badge-branch-text: #0369a1;
             --badge-source-bg: #ecfccb;
             --badge-source-text: #3f6212;
             --badge-tag-bg: #f3e8ff;
             --badge-tag-text: #7c3aed;
-            --score-bar-bg: #e2e8f0;
-            --header-bg: #f8fafc;
+            --highlight-bg: #fef3c7;
         }
 
         [data-theme="dark"] {
@@ -42,107 +37,70 @@
             --text-muted: #64748b;
             --accent: #38bdf8;
             --accent-hover: #7dd3fc;
-            --danger: #ef4444;
-            --danger-hover: #f87171;
-            --success-bg: #166534;
-            --success-text: #bbf7d0;
-            --error-bg: #991b1b;
-            --error-text: #fecaca;
             --badge-branch-bg: #1e3a5f;
             --badge-branch-text: #38bdf8;
             --badge-source-bg: #365314;
             --badge-source-text: #84cc16;
             --badge-tag-bg: #4c1d95;
             --badge-tag-text: #a78bfa;
-            --score-bar-bg: #334155;
-            --header-bg: #1e293b;
+            --highlight-bg: #422006;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-secondary);
             color: var(--text-primary);
             min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
 
+        /* Header */
         header {
-            background: var(--header-bg);
-            padding: 1rem 2rem;
+            background: var(--bg-primary);
+            padding: 0.75rem 1.5rem;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        header h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
+        header h1 { font-size: 1.25rem; font-weight: 600; }
+        header h1 span { color: var(--accent); }
 
-        header h1 span {
-            color: var(--accent);
-        }
+        .header-actions { display: flex; gap: 0.5rem; align-items: center; }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-        }
-
-        /* Theme Toggle */
-        .theme-toggle {
-            background: var(--bg-tertiary);
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
             border: 1px solid var(--border-color);
-            border-radius: 9999px;
-            padding: 0.5rem;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            transition: all 0.2s;
         }
+        .btn-sm:hover { background: var(--bg-tertiary); }
 
-        .theme-toggle:hover {
-            background: var(--border-color);
-        }
-
-        .theme-toggle svg {
-            width: 20px;
-            height: 20px;
-            fill: var(--text-secondary);
-        }
-
-        .container {
+        /* Main layout: tutorial sidebar + 3 panels */
+        /* Height = viewport minus banner (28px) minus header (53px) minus bottom info (36px) */
+        .layout {
             display: grid;
-            grid-template-columns: 300px 1fr 1fr;
-            gap: 1px;
-            background: var(--border-color);
-            height: calc(100vh - 60px);
+            grid-template-columns: 240px 280px 1fr 1fr;
+            height: calc(100vh - 117px);
         }
 
-        .panel {
+        /* Tutorial Sidebar */
+        .tutorial {
             background: var(--bg-primary);
-            padding: 1.5rem;
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem 1rem;
             overflow-y: auto;
         }
 
-        .panel-title {
-            font-size: 0.75rem;
+        .tutorial-title {
+            font-size: 0.7rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -150,176 +108,317 @@
             margin-bottom: 1rem;
         }
 
-        /* Left Panel - Branches */
-        .branch-selector {
-            margin-bottom: 1.5rem;
-        }
-
-        .branch-selector label {
-            display: block;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
+        .step {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
             margin-bottom: 0.5rem;
+            border: 1px solid transparent;
+            transition: all 0.2s;
         }
 
+        .step.active {
+            background: var(--highlight-bg);
+            border-color: var(--warning);
+        }
+
+        .step.completed {
+            opacity: 0.6;
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .step.active .step-number {
+            background: var(--warning);
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: var(--success);
+            color: white;
+        }
+
+        .step-title {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .step-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+            margin-left: 1.75rem;
+        }
+
+        .step-action {
+            margin-top: 0.5rem;
+            margin-left: 1.75rem;
+        }
+
+        .step-action button {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
+            border: none;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .step-action button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Panels */
+        .panel {
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .panel:last-child { border-right: none; }
+
+        /* Subtle inner shadow at top of panels for depth */
+        .panel::before {
+            content: '';
+            display: block;
+            height: 0;
+        }
+
+        .panel-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        /* Branch indicator - green left border for main (safe) */
+        .branch-indicator {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            padding-left: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+            border-left: 4px solid var(--success);
+        }
+
+        /* Orange left border for experiment branches (risky zone) */
+        .branch-indicator.experiment {
+            background: var(--highlight-bg);
+            border: 1px solid var(--warning);
+            border-left: 4px solid var(--warning);
+        }
+
+        .branch-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .branch-indicator.experiment .branch-dot {
+            background: var(--warning);
+        }
+
+        .branch-name {
+            font-weight: 600;
+        }
+
+        /* Small label badge next to branch name */
+        .branch-label {
+            font-size: 0.6rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 9999px;
+            background: var(--success);
+            color: white;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        /* Orange label for experiment branches */
+        .branch-indicator.experiment .branch-label {
+            background: var(--warning);
+        }
+
+        /* Branch select dropdown - below the indicator */
+        .branch-select {
+            margin-bottom: 1rem;
+        }
+
+        /* Form elements */
         select, input, textarea {
             width: 100%;
-            padding: 0.75rem;
+            padding: 0.5rem 0.75rem;
             border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
+            border-radius: 0.375rem;
             background: var(--bg-secondary);
             color: var(--text-primary);
-            font-size: 0.875rem;
-            transition: border-color 0.2s, background 0.2s;
+            font-size: 0.8rem;
         }
 
         select:focus, input:focus, textarea:focus {
             outline: none;
             border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
         }
 
-        .branch-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
+        textarea { min-height: 80px; resize: vertical; }
+
+        label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
         }
+
+        .form-group { margin-bottom: 0.75rem; }
 
         button {
             padding: 0.5rem 1rem;
             border: none;
             border-radius: 0.375rem;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.15s;
         }
 
         .btn-primary {
             background: var(--accent);
             color: white;
+            width: 100%;
+            transition: all 0.15s ease;
         }
-
         .btn-primary:hover {
             background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
         }
 
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: var(--danger-hover);
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
+        .btn-outline {
+            background: transparent;
             border: 1px solid var(--border-color);
+            color: var(--text-secondary);
         }
+        .btn-outline:hover { background: var(--bg-tertiary); }
 
-        .btn-secondary:hover {
-            background: var(--border-color);
-        }
-
-        /* Memory List */
-        .memory-list {
-            margin-top: 1.5rem;
-        }
-
+        /* Memory list */
         .memory-item {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            transition: border-color 0.2s;
-        }
-
-        .memory-item:hover {
-            border-color: var(--accent);
-        }
-
-        .memory-text {
-            font-size: 0.875rem;
-            color: var(--text-primary);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
             margin-bottom: 0.5rem;
-            line-height: 1.5;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .memory-item.highlight {
+            border-color: var(--warning);
+            background: var(--highlight-bg);
         }
 
         .memory-meta {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.375rem;
             flex-wrap: wrap;
+            margin-top: 0.5rem;
         }
 
         .badge {
-            font-size: 0.625rem;
-            padding: 0.25rem 0.5rem;
+            font-size: 0.6rem;
+            padding: 0.125rem 0.375rem;
             border-radius: 9999px;
             font-weight: 500;
-            text-transform: uppercase;
         }
 
-        .badge-branch {
-            background: var(--badge-branch-bg);
-            color: var(--badge-branch-text);
-        }
+        .badge-branch { background: var(--badge-branch-bg); color: var(--badge-branch-text); }
+        .badge-source { background: var(--badge-source-bg); color: var(--badge-source-text); }
+        .badge-tag { background: var(--badge-tag-bg); color: var(--badge-tag-text); }
 
-        .badge-source {
-            background: var(--badge-source-bg);
-            color: var(--badge-source-text);
-        }
-
-        .badge-tag {
-            background: var(--badge-tag-bg);
-            color: var(--badge-tag-text);
-        }
-
-        .timestamp {
-            font-size: 0.625rem;
-            color: var(--text-muted);
-        }
-
-        /* Middle Panel - Add Memory */
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
+        /* Search results */
+        .search-result {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
             margin-bottom: 0.5rem;
         }
 
-        textarea {
-            min-height: 120px;
-            resize: vertical;
+        .search-result.conflict {
+            border-color: var(--danger);
+            background: #fef2f2;
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+        [data-theme="dark"] .search-result.conflict {
+            background: #450a0a;
         }
 
-        /* Right Panel - Search */
+        .result-score {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+        }
+
+        .result-text {
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .score-bar {
+            height: 3px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: var(--accent);
+        }
+
+        /* Search modes */
         .search-modes {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
+            gap: 0.25rem;
+            margin-bottom: 0.75rem;
         }
 
         .mode-btn {
             flex: 1;
-            padding: 0.5rem;
+            padding: 0.375rem;
+            font-size: 0.7rem;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
-            border-radius: 0.375rem;
+            border-radius: 0.25rem;
             cursor: pointer;
-            transition: all 0.15s;
         }
 
         .mode-btn.active {
@@ -328,236 +427,442 @@
             color: white;
         }
 
-        .mode-btn:hover:not(.active) {
-            border-color: var(--accent);
-            color: var(--text-primary);
-        }
-
-        .top-k-slider {
-            margin: 1rem 0;
-        }
-
-        .top-k-slider input[type="range"] {
-            width: 100%;
-            padding: 0;
-        }
-
-        .slider-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
+        /* Empty state */
+        .empty {
+            text-align: center;
+            padding: 2rem 1rem;
             color: var(--text-muted);
+            font-size: 0.8rem;
         }
 
-        /* Search Results */
-        .search-result {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-        }
+        /* SQL panel: needs display block for max-height animation to work */
+        .sql-content { display: block; }
 
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .score {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--accent);
-        }
-
-        .score-bar {
-            height: 4px;
-            background: var(--score-bar-bg);
-            border-radius: 2px;
-            margin-bottom: 0.75rem;
-            overflow: hidden;
-        }
-
-        .score-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), #818cf8);
-            border-radius: 2px;
-        }
-
-        /* SQL Panel */
-        .sql-panel {
-            margin-top: 1.5rem;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-            overflow: hidden;
-        }
-
-        .sql-header {
-            padding: 0.75rem 1rem;
-            background: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
-
-        .sql-header:hover {
-            color: var(--text-secondary);
-        }
-
-        .sql-content {
-            padding: 1rem;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.75rem;
-            color: var(--accent);
-            white-space: pre-wrap;
-            display: none;
-            background: var(--bg-primary);
-        }
-
-        .sql-content.visible {
-            display: block;
-        }
-
-        /* Status message */
-        .status {
+        /* Toast */
+        .toast {
             position: fixed;
             bottom: 1rem;
             right: 1rem;
             padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            font-size: 0.8rem;
             opacity: 0;
-            transition: opacity 0.3s;
+            transition: opacity 0.2s;
             z-index: 100;
         }
 
-        .status.visible {
-            opacity: 1;
+        .toast.visible { opacity: 1; }
+        .toast.success { background: #dcfce7; color: #166534; }
+        .toast.error { background: #fee2e2; color: #991b1b; }
+        .toast.timeline {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+            color: #e0f2fe;
+            border-left: 4px solid var(--accent);
+            padding: 0.75rem 1.25rem;
         }
 
-        .status.success {
-            background: var(--success-bg);
-            color: var(--success-text);
-        }
+        [data-theme="dark"] .toast.success { background: #166534; color: #bbf7d0; }
+        [data-theme="dark"] .toast.error { background: #991b1b; color: #fecaca; }
 
-        .status.error {
-            background: var(--error-bg);
-            color: var(--error-text);
-        }
-
-        /* Empty state */
-        .empty-state {
+        /* Timeline notice - centered, prominent */
+        .timeline-notice {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+            color: #e0f2fe;
+            padding: 1.5rem 2rem;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 500;
             text-align: center;
-            padding: 2rem;
-            color: var(--text-muted);
+            z-index: 200;
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
-
-        .empty-state-icon {
-            font-size: 2rem;
+        .timeline-notice.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .timeline-notice .icon {
+            font-size: 1.5rem;
             margin-bottom: 0.5rem;
         }
+        .timeline-notice .branch-name {
+            color: #38bdf8;
+            font-weight: 600;
+        }
 
-        /* Modal */
-        .modal-overlay {
+        /* Bottom info box - pinned to explain TiDB magic */
+        .info-box {
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: linear-gradient(90deg, #0f172a 0%, #1e3a5f 100%);
+            color: #e0f2fe;
+            padding: 0.5rem 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            font-size: 0.7rem;
+            z-index: 50;
+        }
+        .info-box .item {
             display: flex;
             align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
+            gap: 0.5rem;
+        }
+        .info-box .icon {
+            font-size: 0.9rem;
+        }
+        .info-box .highlight {
+            color: #38bdf8;
+            font-weight: 500;
+        }
+
+        /* Top banner - fixed at top, spans full width */
+        .top-banner {
+            background: linear-gradient(90deg, #0f172a 0%, #1e3a5f 100%);
+            color: #e0f2fe;
+            text-align: center;
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        /* Accent color for keywords in banner */
+        .top-banner strong {
+            color: #38bdf8;
+        }
+
+        /* Progress bar container - sits below tutorial title */
+        .progress-container {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Each segment of the 5-step progress bar */
+        .progress-segment {
+            flex: 1;
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            transition: background 0.3s;
+        }
+
+        /* Completed segments get accent color */
+        .progress-segment.done {
+            background: var(--accent);
+        }
+
+        /* Current segment pulses subtly */
+        .progress-segment.current {
+            background: var(--warning);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Step counter text (e.g., "Step 2 of 5") */
+        .step-counter {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 0.75rem;
+        }
+
+        /* SQL toggle button - subtle until clicked */
+        .sql-toggle {
+            margin-top: 1rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             transition: all 0.2s;
         }
 
-        .modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
+        .sql-toggle:hover {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
         }
 
-        .modal {
-            background: var(--bg-primary);
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            width: 400px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        /* When SQL is open, style toggle as header - light bg to match content */
+        .sql-toggle.open {
+            background: #f4f4f5;
+            border-color: #e4e4e7;
+            color: #52525b;
+            border-radius: 0.5rem 0.5rem 0 0;
+            border-bottom: none;
         }
 
-        .modal h3 {
-            margin-bottom: 1rem;
-            color: var(--text-primary);
+        /* SQL code block - light background, smooth reveal */
+        .sql-content {
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 1.25rem;
+            background: #f4f4f5;
+            border-radius: 0 0 0.5rem 0.5rem;
+            font-family: 'SF Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
+            font-size: 0.8rem;
+            line-height: 1.7;
+            color: #18181b;
+            white-space: pre-wrap;
+            word-break: break-word;
+            border: 1px solid #e4e4e7;
+            border-top: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            position: relative;
+            transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
         }
 
-        .modal-actions {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: flex-end;
-            margin-top: 1rem;
+        /* Visible state - smooth expand */
+        .sql-content.visible {
+            max-height: 500px;
+            padding: 1rem 1.25rem;
+        }
+
+        /* Copy button in top-right corner */
+        .sql-content::before {
+            content: 'SQL';
+            position: absolute;
+            top: 0.5rem;
+            right: 0.75rem;
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Syntax highlighting - keywords pop in purple, strings in green */
+        .sql-content .keyword { color: #7c3aed; font-weight: 600; }
+        .sql-content .string { color: #059669; }
+        .sql-content .comment { color: #94a3b8; font-style: italic; }
+
+        /* Copy button - small, subtle, appears in toggle bar */
+        .copy-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.6rem;
+            font-weight: 500;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.15s;
+        }
+        .copy-btn:hover { opacity: 1; }
+        .copy-btn.copied {
+            background: var(--success);
+        }
+
+        /* Search area wrapper for highlight effect */
+        .search-area {
+            position: relative;
+            padding: 0.75rem;
+            margin: -0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            transition: box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        /* Yellow highlight flash for search area */
+        @keyframes searchHighlight {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); background: transparent; }
+            15% { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.08); }
+            85% { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.08); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); background: transparent; }
+        }
+        .search-area.highlight {
+            animation: searchHighlight 0.8s ease;
+        }
+
+        /* Highlight animation for search results panel */
+        @keyframes resultsHighlight {
+            0% { box-shadow: inset 0 0 0 2px transparent; }
+            50% { box-shadow: inset 0 0 0 2px var(--accent); }
+            100% { box-shadow: inset 0 0 0 2px transparent; }
+        }
+        .results-flash {
+            animation: resultsHighlight 0.5s ease;
+        }
+
+        /* New memory highlight - fades in with accent border */
+        @keyframes newMemoryPop {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .memory-item.new {
+            animation: newMemoryPop 0.4s ease;
+        }
+
+        /* Conflict memory - stronger red glow when just added */
+        @keyframes conflictGlow {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+            50% { box-shadow: 0 0 20px 4px rgba(239, 68, 68, 0.4); }
+            100% { box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2); }
+        }
+        .memory-item.conflict.new {
+            animation: conflictGlow 0.8s ease;
+        }
+
+        /* Branch indicator flash when branch changes */
+        @keyframes branchFlash {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.02); box-shadow: 0 0 12px rgba(245, 158, 11, 0.5); }
+            100% { transform: scale(1); }
+        }
+        .branch-indicator.flash {
+            animation: branchFlash 0.5s ease;
+        }
+
+        /* Conflict memory gets red glow effect */
+        .memory-item.conflict {
+            border-color: var(--danger);
+            background: #fef2f2;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        [data-theme="dark"] .memory-item.conflict {
+            background: #450a0a;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Conflict badge for memory items */
+        .badge-conflict {
+            background: var(--danger);
+            color: white;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.7); }
         }
     </style>
 </head>
 <body>
+    <!-- Top banner: one-line pitch for TiDB -->
+    <div class="top-banner">
+        <strong>TiDB</strong>: vector + fulltext + JSON + branching — all in one table.
+    </div>
+
     <header>
-        <div>
-            <h1>atlas<span>Memory</span></h1>
-            <div class="subtitle">TiDB-powered AI memory with hybrid search + branching</div>
-        </div>
-        <div class="header-right">
-            <div class="subtitle">One table. Vector + Full-text. Time travel.</div>
-            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
-                <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display: none;">
-                    <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
-                </svg>
-                <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                    <path d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"/>
-                </svg>
-            </button>
+        <h1>atlas<span>Memory</span></h1>
+        <div class="header-actions">
+            <button class="btn-sm" onclick="resetDemo()">Reset Demo</button>
+            <button class="btn-sm" onclick="toggleTheme()">Toggle Theme</button>
         </div>
     </header>
 
-    <div class="container">
-        <!-- Left Panel: Branch + Memory List -->
+    <div class="layout">
+        <!-- Tutorial Sidebar -->
+        <div class="tutorial">
+            <div class="tutorial-title">Interactive Demo</div>
+
+            <!-- Progress bar: 5 segments, one per step -->
+            <div class="progress-container" id="progressBar">
+                <div class="progress-segment current"></div>
+                <div class="progress-segment"></div>
+                <div class="progress-segment"></div>
+                <div class="progress-segment"></div>
+                <div class="progress-segment"></div>
+            </div>
+
+            <!-- Step counter: "Step 1 of 5" -->
+            <div class="step-counter" id="stepCounter">Step 1 of 5</div>
+
+            <div class="step active" id="step1">
+                <span class="step-number">1</span>
+                <span class="step-title">Explore Main Branch</span>
+                <div class="step-desc">See the travel preferences stored in TiDB. Try searching.</div>
+                <div class="step-action">
+                    <button onclick="doStep1Search()">Search "vacation"</button>
+                </div>
+            </div>
+
+            <div class="step" id="step2">
+                <span class="step-number">2</span>
+                <span class="step-title">Fork an Experiment</span>
+                <div class="step-desc">Create a branch to test changes without affecting main.</div>
+                <div class="step-action">
+                    <button onclick="doStep2Fork()">Create Branch</button>
+                </div>
+            </div>
+
+            <div class="step" id="step3">
+                <span class="step-number">3</span>
+                <span class="step-title">Add Conflicting Data</span>
+                <div class="step-desc">Add a memory that contradicts existing preferences.</div>
+                <div class="step-action">
+                    <button onclick="doStep3AddConflict()">Add Conflict</button>
+                </div>
+            </div>
+
+            <div class="step" id="step4">
+                <span class="step-number">4</span>
+                <span class="step-title">See the Difference</span>
+                <div class="step-desc">Search again - notice the conflicting result.</div>
+                <div class="step-action">
+                    <button onclick="doStep4Search()">Search Again</button>
+                </div>
+            </div>
+
+            <div class="step" id="step5">
+                <span class="step-number">5</span>
+                <span class="step-title">Roll Back to Main</span>
+                <div class="step-desc">Switch to main - conflict is gone. Time travel!</div>
+                <div class="step-action">
+                    <button onclick="doStep5Rollback()">Switch to Main</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; padding: 0.75rem; background: var(--bg-secondary); border-radius: 0.375rem; font-size: 0.7rem; color: var(--text-muted);">
+                <strong>TL;DR:</strong> TiDB stores vectors + text + JSON in one table. Branching is just a WHERE clause. No Pinecone + Postgres + Redis stack needed.
+            </div>
+        </div>
+
+        <!-- Left Panel: Branch + Memories -->
         <div class="panel">
             <div class="panel-title">Branch & Memories</div>
 
-            <div class="branch-selector">
-                <label>Current Branch</label>
-                <select id="branchSelect" onchange="switchBranch()">
-                    <option value="main">main</option>
-                </select>
+            <div class="branch-indicator" id="branchIndicator">
+                <span class="branch-dot"></span>
+                <span class="branch-name" id="branchName">main</span>
+                <span class="branch-label" id="branchLabel">production</span>
+            </div>
+            <select id="branchSelect" onchange="switchBranch()" class="branch-select">
+                <option value="main">main</option>
+            </select>
+
+            <div id="memoryList">
+                <div class="empty">Loading...</div>
             </div>
 
-            <div class="branch-actions">
-                <button class="btn-primary" onclick="showSavePointModal()">Save Point</button>
-                <button class="btn-danger" onclick="deleteBranch()" id="deleteBranchBtn">Delete</button>
+            <div class="sql-toggle" onclick="toggleSql('listSql')">
+                <span>Show SQL</span>
+                <span style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button class="copy-btn" onclick="event.stopPropagation(); copySql('listSql')">Copy</button>
+                    <span id="listSqlArrow">+</span>
+                </span>
             </div>
-
-            <div class="memory-list" id="memoryList">
-                <div class="empty-state">
-                    <div class="empty-state-icon">-</div>
-                    <div>No memories yet</div>
-                </div>
-            </div>
-
-            <div class="sql-panel">
-                <div class="sql-header" onclick="toggleSql('listSql')">
-                    Show SQL <span id="listSqlArrow">+</span>
-                </div>
-                <div class="sql-content" id="listSql"></div>
-            </div>
+            <div class="sql-content" id="listSql"></div>
         </div>
 
         <!-- Middle Panel: Add Memory -->
@@ -566,141 +871,233 @@
 
             <div class="form-group">
                 <label>Memory Text</label>
-                <textarea id="memoryText" placeholder="Enter memory content..."></textarea>
+                <textarea id="memoryText" placeholder="e.g., User prefers museums over beaches"></textarea>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Source</label>
-                    <select id="memorySource">
-                        <option value="chat">Chat</option>
-                        <option value="doc">Document</option>
-                        <option value="tool">Tool</option>
-                        <option value="user">User Input</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Tags (comma separated)</label>
-                    <input type="text" id="memoryTags" placeholder="preference, travel">
-                </div>
+            <div class="form-group">
+                <label>Source</label>
+                <select id="memorySource">
+                    <option value="chat">Chat</option>
+                    <option value="user">User Input</option>
+                    <option value="doc">Document</option>
+                </select>
             </div>
 
-            <button class="btn-primary" onclick="addMemory()" style="width: 100%;">
-                Add to Current Branch
-            </button>
-
-            <div class="sql-panel">
-                <div class="sql-header" onclick="toggleSql('addSql')">
-                    Show SQL <span id="addSqlArrow">+</span>
-                </div>
-                <div class="sql-content" id="addSql"></div>
+            <div class="form-group">
+                <label>Tags</label>
+                <input type="text" id="memoryTags" placeholder="preference, travel">
             </div>
+
+            <button class="btn-primary" onclick="addMemory()">Add to Current Branch</button>
+
+            <div class="sql-toggle" onclick="toggleSql('addSql')" style="margin-top: 1rem;">
+                <span>Show SQL</span>
+                <span style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button class="copy-btn" onclick="event.stopPropagation(); copySql('addSql')">Copy</button>
+                    <span id="addSqlArrow">+</span>
+                </span>
+            </div>
+            <div class="sql-content" id="addSql"></div>
         </div>
 
         <!-- Right Panel: Search -->
         <div class="panel">
-            <div class="panel-title">Search Memories</div>
+            <div class="panel-title">Search</div>
 
-            <div class="form-group">
-                <label>Search Query</label>
-                <input type="text" id="searchQuery" placeholder="What are you looking for?" onkeypress="if(event.key==='Enter')searchMemories()">
-            </div>
-
-            <div class="search-modes">
-                <button class="mode-btn active" data-mode="hybrid" onclick="setSearchMode('hybrid')">Hybrid</button>
-                <button class="mode-btn" data-mode="vector" onclick="setSearchMode('vector')">Vector</button>
-                <button class="mode-btn" data-mode="fulltext" onclick="setSearchMode('fulltext')">Full-text</button>
-            </div>
-
-            <div class="top-k-slider">
-                <label>Results</label>
-                <input type="range" id="topK" min="1" max="10" value="5" oninput="updateTopKLabel()">
-                <div class="slider-label">
-                    <span>1</span>
-                    <span id="topKValue">5 results</span>
-                    <span>10</span>
+            <div class="search-area" id="searchArea">
+                <div class="form-group">
+                    <label>Query</label>
+                    <input type="text" id="searchQuery" placeholder="e.g., travel tips, hotel preferences" onkeypress="if(event.key==='Enter')searchMemories()">
                 </div>
-            </div>
 
-            <button class="btn-primary" onclick="searchMemories()" style="width: 100%;">
-                Search
-            </button>
-
-            <div id="searchResults" style="margin-top: 1.5rem;">
-                <div class="empty-state">
-                    <div class="empty-state-icon">?</div>
-                    <div>Enter a query and search</div>
+                <div class="search-modes">
+                    <button class="mode-btn active" data-mode="hybrid" onclick="setMode('hybrid')">Hybrid</button>
+                    <button class="mode-btn" data-mode="vector" onclick="setMode('vector')">Vector</button>
+                    <button class="mode-btn" data-mode="fulltext" onclick="setMode('fulltext')">Fulltext</button>
                 </div>
+
+                <button class="btn-primary" onclick="searchMemories()">Search</button>
             </div>
 
-            <div class="sql-panel">
-                <div class="sql-header" onclick="toggleSql('searchSql')">
-                    Show SQL <span id="searchSqlArrow">+</span>
-                </div>
-                <div class="sql-content" id="searchSql"></div>
+            <div id="searchResults" style="margin-top: 1rem;">
+                <div class="empty">Enter a query above</div>
             </div>
+
+            <div class="sql-toggle" onclick="toggleSql('searchSql')" style="margin-top: 1rem;">
+                <span>Show SQL</span>
+                <span style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button class="copy-btn" onclick="event.stopPropagation(); copySql('searchSql')">Copy</button>
+                    <span id="searchSqlArrow">+</span>
+                </span>
+            </div>
+            <div class="sql-content" id="searchSql"></div>
         </div>
     </div>
 
-    <!-- Save Point Modal -->
-    <div class="modal-overlay" id="savePointModal">
-        <div class="modal">
-            <h3>Create Save Point</h3>
-            <div class="form-group">
-                <label>Branch Name</label>
-                <input type="text" id="savePointName" placeholder="experiment-1">
-            </div>
-            <div class="modal-actions">
-                <button class="btn-secondary" onclick="hideSavePointModal()">Cancel</button>
-                <button class="btn-primary" onclick="createSavePoint()">Create</button>
-            </div>
+    <div class="toast" id="toast"></div>
+
+    <!-- Bottom info box - explains the TiDB magic -->
+    <div class="info-box">
+        <div class="item">
+            <span class="icon">🧠</span>
+            <span><span class="highlight">Vectors + Text + JSON</span> in one row</span>
+        </div>
+        <div class="item">
+            <span class="icon">🌿</span>
+            <span>Branching = <span class="highlight">WHERE branch = '...'</span></span>
+        </div>
+        <div class="item">
+            <span class="icon">🚫</span>
+            <span>No Pinecone + Postgres + Redis stack</span>
+        </div>
+        <div class="item">
+            <span class="icon">☁️</span>
+            <span>Runs on <span class="highlight">TiDB Cloud</span> or local Docker</span>
         </div>
     </div>
 
-    <!-- Status Toast -->
-    <div class="status" id="status"></div>
+    <!-- Timeline notice - shows when switching branches -->
+    <div class="timeline-notice" id="timelineNotice">
+        <div class="icon">⏪</div>
+        <div>Timeline restored</div>
+        <div><span class="branch-name" id="timelineBranch">main</span> branch active</div>
+    </div>
 
     <script>
         // State
         let currentBranch = 'main';
         let searchMode = 'hybrid';
+        let currentStep = 1;
+        let experimentBranch = null;
         const userId = 'demo-user';
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadBranches();
-            loadMemories();
+        // Init
+        document.addEventListener('DOMContentLoaded', async () => {
             loadTheme();
+            await seedData();
+            await loadBranches();
+            await loadMemories();
         });
 
         // ============================================================
-        // Theme Toggle
+        // Tutorial Steps
         // ============================================================
 
-        function loadTheme() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            if (savedTheme === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                document.getElementById('sunIcon').style.display = 'block';
-                document.getElementById('moonIcon').style.display = 'none';
+        function setStep(n) {
+            // Update step cards: mark completed, active, or pending
+            for (let i = 1; i <= 5; i++) {
+                const el = document.getElementById('step' + i);
+                el.classList.remove('active', 'completed');
+                if (i < n) el.classList.add('completed');
+                if (i === n) el.classList.add('active');
             }
+
+            // Update progress bar segments
+            const segments = document.querySelectorAll('.progress-segment');
+            segments.forEach((seg, idx) => {
+                seg.classList.remove('done', 'current');
+                if (idx < n - 1) seg.classList.add('done');      // completed steps
+                if (idx === n - 1) seg.classList.add('current'); // current step
+            });
+
+            // Update "Step X of 5" counter
+            document.getElementById('stepCounter').textContent = `Step ${n} of 5`;
+
+            currentStep = n;
         }
 
-        function toggleTheme() {
-            const html = document.documentElement;
-            const isDark = html.getAttribute('data-theme') === 'dark';
+        async function doStep1Search() {
+            document.getElementById('searchQuery').value = 'vacation recommendations';
+            await searchMemories();
+            setStep(2);
+        }
 
-            if (isDark) {
-                html.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'light');
-                document.getElementById('sunIcon').style.display = 'none';
-                document.getElementById('moonIcon').style.display = 'block';
-            } else {
-                html.setAttribute('data-theme', 'dark');
-                localStorage.setItem('theme', 'dark');
-                document.getElementById('sunIcon').style.display = 'block';
-                document.getElementById('moonIcon').style.display = 'none';
-            }
+        async function doStep2Fork() {
+            // Create experiment branch
+            const res = await fetch('/api/branches/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, tag: 'experiment', source_branch: 'main' })
+            });
+            const data = await res.json();
+            experimentBranch = data.new_branch;
+            currentBranch = experimentBranch;
+
+            await loadBranches();
+            document.getElementById('branchSelect').value = currentBranch;
+            updateBranchIndicator();
+            await loadMemories();
+
+            // Flash the branch indicator to show something changed
+            const indicator = document.getElementById('branchIndicator');
+            indicator.classList.add('flash');
+            setTimeout(() => indicator.classList.remove('flash'), 500);
+
+            // Show timeline notice for forward jump
+            showTimelineNotice(experimentBranch);
+
+            setStep(3);
+
+            // Pre-fill the conflict text
+            document.getElementById('memoryText').value = 'User hates beaches and wants mountain hiking only';
+            document.getElementById('memorySource').value = 'chat';
+            document.getElementById('memoryTags').value = 'conflict';
+        }
+
+        async function doStep3AddConflict() {
+            await addMemory();
+            setStep(4);
+        }
+
+        async function doStep4Search() {
+            document.getElementById('searchQuery').value = 'vacation recommendations';
+            await searchMemories();
+            setStep(5);
+        }
+
+        async function doStep5Rollback() {
+            currentBranch = 'main';
+            document.getElementById('branchSelect').value = 'main';
+            updateBranchIndicator();
+            await loadMemories();
+
+            // Show the timeline notice - this is the "time travel" moment
+            showTimelineNotice('main');
+
+            // Search again to show difference
+            document.getElementById('searchQuery').value = 'vacation recommendations';
+            await searchMemories();
+
+            setStep(1); // Reset for replay
+        }
+
+        // ============================================================
+        // Seed & Reset
+        // ============================================================
+
+        async function seedData() {
+            try {
+                await fetch('/api/seed', { method: 'POST' });
+            } catch (e) {}
+        }
+
+        async function resetDemo() {
+            if (!confirm('Reset demo? This deletes all memories and starts fresh.')) return;
+
+            await fetch('/api/reset', { method: 'POST' });
+            currentBranch = 'main';
+            experimentBranch = null;
+            await loadBranches();
+            document.getElementById('branchSelect').value = 'main';
+            updateBranchIndicator();
+            await loadMemories();
+
+            // Clear search
+            document.getElementById('searchQuery').value = '';
+            document.getElementById('searchResults').innerHTML = '<div class="empty">Enter a query above</div>';
+
+            setStep(1);
+            toast('Demo reset');
         }
 
         // ============================================================
@@ -708,103 +1105,35 @@
         // ============================================================
 
         async function loadBranches() {
-            try {
-                const res = await fetch(`/api/branches?user_id=${userId}`);
-                const data = await res.json();
+            const res = await fetch('/api/branches?user_id=' + userId);
+            const data = await res.json();
 
-                const select = document.getElementById('branchSelect');
-                select.innerHTML = data.branches.map(b =>
-                    `<option value="${b}" ${b === currentBranch ? 'selected' : ''}>${b}</option>`
-                ).join('');
-
-                updateDeleteButton();
-            } catch (err) {
-                showStatus('Failed to load branches', 'error');
-            }
+            const select = document.getElementById('branchSelect');
+            select.innerHTML = data.branches.map(b =>
+                `<option value="${b}" ${b === currentBranch ? 'selected' : ''}>${b}</option>`
+            ).join('');
         }
 
         function switchBranch() {
             currentBranch = document.getElementById('branchSelect').value;
+            updateBranchIndicator();
             loadMemories();
-            updateDeleteButton();
-            showStatus(`Switched to branch: ${currentBranch}`, 'success');
+            showTimelineNotice(currentBranch);
         }
 
-        function updateDeleteButton() {
-            const btn = document.getElementById('deleteBranchBtn');
-            btn.disabled = currentBranch === 'main';
-            btn.style.opacity = currentBranch === 'main' ? '0.5' : '1';
-        }
+        function updateBranchIndicator() {
+            const indicator = document.getElementById('branchIndicator');
+            const nameEl = document.getElementById('branchName');
+            const labelEl = document.getElementById('branchLabel');
 
-        function showSavePointModal() {
-            document.getElementById('savePointModal').classList.add('visible');
-            document.getElementById('savePointName').focus();
-        }
+            nameEl.textContent = currentBranch;
 
-        function hideSavePointModal() {
-            document.getElementById('savePointModal').classList.remove('visible');
-            document.getElementById('savePointName').value = '';
-        }
-
-        async function createSavePoint() {
-            const tag = document.getElementById('savePointName').value.trim();
-            if (!tag) {
-                showStatus('Please enter a branch name', 'error');
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/branches/save', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        tag: tag,
-                        source_branch: currentBranch
-                    })
-                });
-
-                const data = await res.json();
-                hideSavePointModal();
-
-                // Switch to new branch
-                currentBranch = data.new_branch;
-                await loadBranches();
-                document.getElementById('branchSelect').value = currentBranch;
-                await loadMemories();
-
-                showStatus(`Created branch: ${data.new_branch}`, 'success');
-                document.getElementById('listSql').textContent = data.sql_used;
-            } catch (err) {
-                showStatus('Failed to create save point', 'error');
-            }
-        }
-
-        async function deleteBranch() {
-            if (currentBranch === 'main') {
-                showStatus('Cannot delete main branch', 'error');
-                return;
-            }
-
-            if (!confirm(`Delete branch "${currentBranch}" and all its memories?`)) {
-                return;
-            }
-
-            try {
-                const res = await fetch(`/api/branches/${currentBranch}?user_id=${userId}`, {
-                    method: 'DELETE'
-                });
-
-                const data = await res.json();
-
-                currentBranch = 'main';
-                await loadBranches();
-                document.getElementById('branchSelect').value = 'main';
-                await loadMemories();
-
-                showStatus(`Deleted ${data.deleted_count} memories`, 'success');
-            } catch (err) {
-                showStatus('Failed to delete branch', 'error');
+            if (currentBranch !== 'main') {
+                indicator.classList.add('experiment');
+                labelEl.textContent = 'testing'; // orange badge
+            } else {
+                indicator.classList.remove('experiment');
+                labelEl.textContent = 'production'; // green badge
             }
         }
 
@@ -813,37 +1142,31 @@
         // ============================================================
 
         async function loadMemories() {
-            try {
-                const res = await fetch(`/api/memories?user_id=${userId}&branch=${currentBranch}`);
-                const data = await res.json();
+            const res = await fetch(`/api/memories?user_id=${userId}&branch=${currentBranch}`);
+            const data = await res.json();
 
-                const list = document.getElementById('memoryList');
+            const list = document.getElementById('memoryList');
 
-                if (data.memories.length === 0) {
-                    list.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">-</div>
-                            <div>No memories in "${currentBranch}"</div>
-                        </div>
-                    `;
-                } else {
-                    list.innerHTML = data.memories.map(m => `
-                        <div class="memory-item">
-                            <div class="memory-text">${escapeHtml(m.text)}</div>
+            if (data.memories.length === 0) {
+                list.innerHTML = '<div class="empty">No memories in this branch</div>';
+            } else {
+                list.innerHTML = data.memories.map(m => {
+                    // Detect conflicting memories (e.g., "hates beaches")
+                    const isConflict = m.text.toLowerCase().includes('hates');
+                    return `
+                        <div class="memory-item ${isConflict ? 'conflict' : ''}">
+                            <div>${escapeHtml(m.text)}</div>
                             <div class="memory-meta">
-                                <span class="badge badge-branch">${m.branch}</span>
+                                ${isConflict ? '<span class="badge badge-conflict">conflict</span>' : ''}
                                 ${m.metadata?.source ? `<span class="badge badge-source">${m.metadata.source}</span>` : ''}
                                 ${(m.metadata?.tags || []).map(t => `<span class="badge badge-tag">${t}</span>`).join('')}
-                                ${m.created_at ? `<span class="timestamp">${formatTime(m.created_at)}</span>` : ''}
                             </div>
                         </div>
-                    `).join('');
-                }
-
-                document.getElementById('listSql').textContent = data.sql_used;
-            } catch (err) {
-                showStatus('Failed to load memories', 'error');
+                    `;
+                }).join('');
             }
+
+            setSql('listSql', data.sql_used);
         }
 
         // ============================================================
@@ -851,127 +1174,171 @@
         // ============================================================
 
         async function addMemory() {
-            const text = document.getElementById('memoryText').value.trim();
-            if (!text) {
-                showStatus('Please enter memory text', 'error');
-                return;
-            }
+            const textEl = document.getElementById('memoryText');
+            const text = textEl.value.trim();
+            if (!text) { toast('Enter memory text', 'error'); return; }
 
             const source = document.getElementById('memorySource').value;
             const tags = document.getElementById('memoryTags').value;
 
-            try {
-                const res = await fetch('/api/memories', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        text: text,
-                        source: source,
-                        tags: tags,
-                        branch: currentBranch
-                    })
-                });
+            const res = await fetch('/api/memories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, text, source, tags, branch: currentBranch })
+            });
 
-                const data = await res.json();
+            const data = await res.json();
+            const isConflict = text.toLowerCase().includes('hates');
 
-                // Clear form
-                document.getElementById('memoryText').value = '';
-                document.getElementById('memoryTags').value = '';
+            textEl.value = '';
+            document.getElementById('memoryTags').value = '';
+            await loadMemoriesWithHighlight(data.id, isConflict);
 
-                // Reload memories
-                await loadMemories();
+            toast(isConflict ? 'Conflict added!' : 'Memory added');
+            setSql('addSql', data.sql_used);
+        }
 
-                showStatus(`Memory added (id: ${data.id})`, 'success');
-                document.getElementById('addSql').textContent = data.sql_used;
-            } catch (err) {
-                showStatus('Failed to add memory', 'error');
+        // Load memories and highlight the newest one
+        async function loadMemoriesWithHighlight(newId, isConflict) {
+            const res = await fetch(`/api/memories?user_id=${userId}&branch=${currentBranch}`);
+            const data = await res.json();
+
+            const list = document.getElementById('memoryList');
+
+            if (data.memories.length === 0) {
+                list.innerHTML = '<div class="empty">No memories in this branch</div>';
+            } else {
+                list.innerHTML = data.memories.map(m => {
+                    const memIsConflict = m.text.toLowerCase().includes('hates');
+                    const isNew = m.id === newId;
+                    return `
+                        <div class="memory-item ${memIsConflict ? 'conflict' : ''} ${isNew ? 'new' : ''}">
+                            <div>${escapeHtml(m.text)}</div>
+                            <div class="memory-meta">
+                                ${memIsConflict ? '<span class="badge badge-conflict">conflict</span>' : ''}
+                                ${m.metadata?.source ? `<span class="badge badge-source">${m.metadata.source}</span>` : ''}
+                                ${(m.metadata?.tags || []).map(t => `<span class="badge badge-tag">${t}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             }
+
+            setSql('listSql', data.sql_used);
         }
 
         // ============================================================
         // Search
         // ============================================================
 
-        function setSearchMode(mode) {
+        function setMode(mode) {
             searchMode = mode;
             document.querySelectorAll('.mode-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.mode === mode);
             });
         }
 
-        function updateTopKLabel() {
-            const value = document.getElementById('topK').value;
-            document.getElementById('topKValue').textContent = `${value} results`;
-        }
-
         async function searchMemories() {
             const query = document.getElementById('searchQuery').value.trim();
-            if (!query) {
-                showStatus('Please enter a search query', 'error');
-                return;
-            }
+            if (!query) { toast('Enter a search query', 'error'); return; }
 
-            const topK = parseInt(document.getElementById('topK').value);
+            // Yellow highlight around search area
+            const searchArea = document.getElementById('searchArea');
+            searchArea.classList.remove('highlight');
+            void searchArea.offsetWidth; // Force reflow to restart animation
+            searchArea.classList.add('highlight');
 
-            try {
-                const res = await fetch('/api/search', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        query: query,
-                        mode: searchMode,
-                        top_k: topK,
-                        branch: currentBranch
-                    })
-                });
+            const res = await fetch('/api/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, query, mode: searchMode, top_k: 5, branch: currentBranch })
+            });
 
-                const data = await res.json();
-                const results = document.getElementById('searchResults');
+            const data = await res.json();
+            const results = document.getElementById('searchResults');
 
-                if (data.results.length === 0) {
-                    results.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">-</div>
-                            <div>No results found</div>
+            // Flash the results area
+            results.classList.add('results-flash');
+            setTimeout(() => results.classList.remove('results-flash'), 500);
+
+            if (data.results.length === 0) {
+                results.innerHTML = '<div class="empty">No results</div>';
+            } else {
+                results.innerHTML = data.results.map(r => {
+                    const isConflict = r.text.toLowerCase().includes('hates');
+                    return `
+                        <div class="search-result ${isConflict ? 'conflict' : ''}">
+                            <div class="result-score">${(r.score * 100).toFixed(0)}% match</div>
+                            <div class="score-bar"><div class="score-fill" style="width: ${r.score * 100}%"></div></div>
+                            <div class="result-text">${escapeHtml(r.text)}</div>
                         </div>
                     `;
-                } else {
-                    results.innerHTML = data.results.map(r => `
-                        <div class="search-result">
-                            <div class="result-header">
-                                <span class="score">${(r.score * 100).toFixed(1)}% match</span>
-                                <span class="badge badge-branch">${currentBranch}</span>
-                            </div>
-                            <div class="score-bar">
-                                <div class="score-fill" style="width: ${r.score * 100}%"></div>
-                            </div>
-                            <div class="memory-text">${escapeHtml(r.text)}</div>
-                            <div class="memory-meta">
-                                ${r.metadata?.source ? `<span class="badge badge-source">${r.metadata.source}</span>` : ''}
-                                ${(r.metadata?.tags || []).map(t => `<span class="badge badge-tag">${t}</span>`).join('')}
-                            </div>
-                        </div>
-                    `).join('');
-                }
-
-                document.getElementById('searchSql').textContent = data.sql_used;
-                showStatus(`Found ${data.results.length} results (${data.mode} mode)`, 'success');
-            } catch (err) {
-                showStatus('Search failed', 'error');
+                }).join('');
             }
+
+            setSql('searchSql', data.sql_used);
         }
 
         // ============================================================
-        // Utilities
+        // Utils
         // ============================================================
 
         function toggleSql(id) {
             const el = document.getElementById(id);
             const arrow = document.getElementById(id + 'Arrow');
+            const toggle = el.previousElementSibling; // the .sql-toggle div
+
             el.classList.toggle('visible');
-            arrow.textContent = el.classList.contains('visible') ? '-' : '+';
+            toggle.classList.toggle('open'); // adjusts border-radius when open
+            arrow.textContent = el.classList.contains('visible') ? '−' : '+';
+        }
+
+        // Simple SQL syntax highlighting - makes keywords pop
+        function highlightSql(sql) {
+            const keywords = ['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'ORDER BY', 'LIMIT', 'INSERT', 'INTO', 'VALUES', 'DELETE', 'UPDATE', 'SET', 'JOIN', 'LEFT', 'RIGHT', 'INNER', 'ON', 'AS', 'DISTINCT', 'ASC', 'DESC', 'GROUP BY', 'HAVING'];
+            let highlighted = escapeHtml(sql);
+
+            // Highlight SQL keywords (case-insensitive, but display uppercase)
+            keywords.forEach(kw => {
+                const regex = new RegExp(`\\b${kw}\\b`, 'gi');
+                highlighted = highlighted.replace(regex, `<span class="keyword">${kw}</span>`);
+            });
+
+            // Highlight strings in single quotes
+            highlighted = highlighted.replace(/'([^']*)'/g, `<span class="string">'$1'</span>`);
+
+            // Highlight comments (-- style)
+            highlighted = highlighted.replace(/(--.*?)(\n|$)/g, `<span class="comment">$1</span>$2`);
+
+            return highlighted;
+        }
+
+        // Set SQL content with syntax highlighting
+        function setSql(id, sql) {
+            const el = document.getElementById(id);
+            el.innerHTML = highlightSql(sql);
+            el.dataset.rawSql = sql; // store raw SQL for copy
+        }
+
+        // Copy SQL to clipboard
+        async function copySql(id) {
+            const el = document.getElementById(id);
+            const sql = el.dataset.rawSql || el.textContent;
+
+            try {
+                await navigator.clipboard.writeText(sql);
+                // Find the copy button and show feedback
+                const btn = el.previousElementSibling.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 1500);
+            } catch (err) {
+                toast('Failed to copy', 'error');
+            }
         }
 
         function escapeHtml(text) {
@@ -980,18 +1347,42 @@
             return div.innerHTML;
         }
 
-        function formatTime(isoString) {
-            const date = new Date(isoString);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        function toast(msg, type = 'success') {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast visible ' + type;
+            setTimeout(() => el.classList.remove('visible'), 2500);
         }
 
-        function showStatus(message, type) {
-            const status = document.getElementById('status');
-            status.textContent = message;
-            status.className = `status visible ${type}`;
-            setTimeout(() => {
-                status.classList.remove('visible');
-            }, 3000);
+        // Show centered timeline notice when switching branches
+        function showTimelineNotice(branchName) {
+            const notice = document.getElementById('timelineNotice');
+            const branchEl = document.getElementById('timelineBranch');
+            branchEl.textContent = branchName;
+
+            // Update icon based on direction
+            const iconEl = notice.querySelector('.icon');
+            iconEl.textContent = branchName === 'main' ? '⏪' : '⏩';
+
+            notice.classList.add('visible');
+            setTimeout(() => notice.classList.remove('visible'), 1800);
+        }
+
+        function loadTheme() {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
         }
     </script>
 </body>
