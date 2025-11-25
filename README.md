@@ -1,5 +1,7 @@
 # atlasMemory
 
+![atlasMemory UI](atlas_memory/screenshots/ui.png)
+
 AI memory backed by TiDB. Vector search, full-text, hybrid retrieval, and branching - all in one table.
 
 ## Quickstart
