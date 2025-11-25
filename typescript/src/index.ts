@@ -1,0 +1,1 @@
+console.log('mem0-tidb MVP starting...');
