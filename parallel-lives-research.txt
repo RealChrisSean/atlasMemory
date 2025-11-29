@@ -1,0 +1,195 @@
+PARALLEL LIVES - MARKET RESEARCH & OPPORTUNITY ANALYSIS
+========================================================
+
+THE CONCEPT
+-----------
+"Parallel Lives" - An AI that simulates how your life choices branch. You tell it about a decision you're facing, it creates branches showing different outcomes. Visual tree of life paths. Shareable.
+
+Core mechanic: The branching/save point system already built in atlasMemory becomes the product itself, not just infrastructure.
+
+
+RESEARCH FINDINGS
+-----------------
+
+Search queries used:
+- "AI parallel lives simulator life decision branching what if choices app"
+- "what if life choices AI simulator alternate life paths"
+
+
+DIRECT COMPETITORS FOUND:
+
+1. Parallel Lives (GitHub - Wrttnspknbrkn/parallel-lives)
+   URL: https://github.com/Wrttnspknbrkn/parallel-lives
+
+   What it claims to do:
+   - AI-Powered Alternate Reality Simulator
+   - User input form for personal data and key life decisions
+   - "What-if" scenarios with AI generating personalized life paths
+   - Future projections (5, 10, 20 years)
+   - Interactive charts, graphs, and timelines
+   - Social sharing
+   - Gamified exploration with badges
+
+   Tech stack: React.js, Tailwind CSS, D3.js, OpenAI API, Supabase, Node.js
+
+   Reality check:
+   - ZERO stars
+   - ZERO forks
+   - Only 5 commits total
+   - Demo URL (spiffy-meerkat-4e2804.netlify.app) is broken/pivoted
+   - Demo shows "DreamWeaver AI - Transform Your Dreams" instead
+   - Likely abandoned hackathon project
+
+   Verdict: Not a real competitor. Concept only, no execution.
+
+
+2. Multiverse Life Simulator (lablab.ai hackathon)
+   URL: https://lablab.ai/event/raise-your-hack/ai-explorer/multiverse-life-simulator
+
+   What it claims:
+   - 3-step life generator
+   - AI-generated life paths
+   - PDF export of decision trees
+   - "Decision theory meets AI"
+
+   Verdict: Hackathon project, not a maintained product.
+
+
+ADJACENT PRODUCTS (Different category - games, not tools):
+
+3. BitLife - Life Simulator
+   URL: https://bitlifefree.io/
+   - Very popular text-based life sim game
+   - Birth to death playthrough
+   - Thousands of choices
+   - "What if" scenarios but as entertainment, not personal reflection
+   - Each choice has branching outcomes
+
+   Verdict: Proves market appetite for "what if" life content. But it's a game, not a personal tool.
+
+4. Life Choices: Life Simulator
+   URL: https://apps.apple.com/us/app/life-choices-life-simulator/id1585419012
+   - 1000+ choices
+   - Create characters, live their whole life
+   - Similar to BitLife
+
+   Verdict: Game, not a personal decision tool.
+
+5. Infinite Life Simulation
+   URL: https://www.infinitelifesimulation.com/
+   - AI-driven life sim game
+   - Dynamic scenarios
+
+   Verdict: Game.
+
+6. Alter Ego
+   URL: https://www.playalterego.com/
+   - "What if you could live your life over again?"
+   - Life simulation game
+
+   Verdict: Game.
+
+7. What-If Simulator (yeschat.ai)
+   URL: https://www.yeschat.ai/gpts-2OTolYm31j-What-If-Simulator
+   - AI-powered alternate scenarios
+   - Focused on fictional/historical what-ifs, not personal life
+
+   Verdict: Different use case (fiction/history, not personal).
+
+8. AI LifeSim (FlowGPT)
+   URL: https://flowgpt.com/p/life-simulator
+   - ChatGPT prompt/wrapper
+   - Roleplay life simulator
+
+   Verdict: Just a prompt, not a product.
+
+
+COMPETITIVE ANALYSIS SUMMARY
+----------------------------
+
+The space is WIDE OPEN.
+
+- No well-executed version exists
+- The one GitHub project with the exact name is abandoned (0 stars, broken demo)
+- Games like BitLife prove massive appetite for "what if" life content
+- But no clean, shareable, Nutlope-style tool exists
+- Nobody has done the visual branching tree approach
+
+
+WHY YOUR VERSION WINS
+---------------------
+
+1. Actually works and looks good
+   - Real, functional product vs abandoned hackathon projects
+
+2. Visual branching tree (killer feature)
+   - Most tools show one timeline at a time
+   - You show the actual tree with clickable branches
+   - This is the differentiator
+
+3. Shareable URLs
+   - "Here's my life if I took that job vs stayed"
+   - Social/viral potential
+   - Compare life paths with friends
+
+4. Clean UX
+   - Paste your situation
+   - Get branches
+   - Explore visually
+   - No account required to try
+
+5. Open source with one-click deploy
+   - Nutlope style
+   - Developers can fork and customize
+   - Deploy button (Vercel/Railway)
+   - .env.example with just API key needed
+
+6. Built on real tech
+   - The atlasMemory branching system is the foundation
+   - Not just a ChatGPT wrapper
+   - Vector search for finding relevant context across branches
+
+
+TECHNICAL FOUNDATION YOU ALREADY HAVE
+-------------------------------------
+
+From atlasMemory:
+- Memory storage with vector embeddings
+- Branch creation (save_point)
+- Branch switching (load_point)
+- Branch listing and deletion
+- Hybrid search (vector + fulltext)
+- Multi-user support (user_id isolation)
+
+What needs to be added for Parallel Lives:
+- AI generation layer (life path narratives)
+- Visual tree UI component
+- Shareable URL system
+- Possibly SQLite + sqlite-vec for zero-friction local dev
+
+
+MARKET VALIDATION
+-----------------
+
+BitLife's success proves:
+- People love exploring "what if" life scenarios
+- The concept is instantly understandable
+- High engagement with branching life choices
+- Shareability drives growth (people share wild life outcomes)
+
+Gap in market:
+- BitLife is entertainment (fictional character)
+- Nothing exists for YOUR actual life decisions
+- No tool for "I'm deciding between job A and job B, show me both futures"
+
+
+NEXT STEPS
+----------
+
+Scope v1:
+- Define MVP features
+- Choose tech stack (keep TiDB or switch to SQLite for fork-ability?)
+- Design the visual branching tree UI
+- Plan the AI prompting strategy for life path generation
+- Create shareable URL structure
+- Build deploy button flow

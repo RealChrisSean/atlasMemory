@@ -1,7 +1,3 @@
-# tests/test_branching.py
-"""
-Sanity tests for branching (time travel) operations.
-"""
 import pytest
 from atlas_memory import (
     add_memory,
@@ -106,8 +102,7 @@ class TestDeleteBranch:
         assert len(results) == 0
 
     def test_cannot_delete_main_branch(self):
-        """delete_branch should raise error for main branch."""
-        with pytest.raises(ValueError, match="Cannot delete the main branch"):
+        with pytest.raises(ValueError, match="Can't delete main branch"):
             delete_branch("any-user", "main")
 
 

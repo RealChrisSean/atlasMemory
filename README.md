@@ -4,7 +4,58 @@
 
 A Git-style memory layer for AI agents, built on TiDB. One table, three search modes (vector, full-text, hybrid), multi-tenant support, and branching for experiments and rollbacks. All in vanilla SQL. No Pinecone + Postgres + Redis stack to manage.
 
+**[Live Demo](https://atlasmemory-production.up.railway.app)**
+
 Other memory systems exist, but most don't give you branching, full-text, vectors together in a single distributed SQL database. If you want to experiment safely without juggling multiple services, this is a clean option.
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      Your Agent                         │
+└─────────────────────────┬───────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│                   atlasMemory                           │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │
+│  │ add_memory  │  │   search    │  │   branching     │  │
+│  │             │  │  (vector,   │  │  (save_point,   │  │
+│  │             │  │  fulltext,  │  │   switch,       │  │
+│  │             │  │   hybrid)   │  │   delete)       │  │
+│  └─────────────┘  └─────────────┘  └─────────────────┘  │
+└─────────────────────────┬───────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────┐
+│                   TiDB Serverless                       │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │  memories table                                 │    │
+│  │  ├─ id, user_id, branch                         │    │
+│  │  ├─ text, metadata_json                         │    │
+│  │  ├─ embedding VECTOR(384)                       │    │
+│  │  └─ created_at                                  │    │
+│  └─────────────────────────────────────────────────┘    │
+│                                                         │
+│  vec_cosine_distance() │ JSON queries │ Full-text      │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Why Branching Matters for AI Agents
+
+Agents make mistakes. They go down wrong paths, hallucinate, or make decisions based on bad context. Without branching, you have two options: let the agent keep going with corrupted memory, or wipe everything and start over.
+
+Branching gives you a third option: checkpoints.
+
+**Before a risky operation:** Save a branch. If things go wrong, roll back. The agent can explore different approaches without permanently polluting its memory.
+
+**A/B testing agent behavior:** Run the same agent with different memory states. Compare outcomes. Keep the branch that worked better.
+
+**Multi-turn recovery:** User changes their mind mid-conversation? Branch back to before the wrong turn instead of awkwardly trying to "forget" things.
+
+**Debugging:** Something went wrong three steps ago. Branch history lets you pinpoint when the memory state went bad.
+
+The implementation is simple: every memory row has a `branch` column. Creating a branch copies rows to a new branch name. Switching branches is just a WHERE clause. No complex git internals, just SQL.
 
 ## Quickstart
 

@@ -1,7 +1,7 @@
 from atlas_memory.memory import add_memory, search_memory
 from atlas_memory.branching import save_point, load_point, delete_branch, list_branches
 from atlas_memory.embeddings import embed
-from atlas_memory.db import get_session, engine
+from atlas_memory.db import get_session, engine, TiDBConnectionError
 from atlas_memory.schema import Memory, init_db
 
 
@@ -48,4 +48,5 @@ __all__ = [
     "engine",
     "Memory",
     "init_db",
+    "TiDBConnectionError",
 ]
